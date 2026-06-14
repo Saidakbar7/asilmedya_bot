@@ -1,4 +1,4 @@
-const { Telegraf, Markup } = require('telegraf');
+import { Telegraf, Markup } from 'telegraf';
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const bot = new Telegraf(BOT_TOKEN);
@@ -11,7 +11,6 @@ const REQUIRED_CHANNELS = [
 
 const INSTAGRAM_URL = 'https://www.instagram.com/asilmedia_uzb?igsh=Z2F3NXlzeHhjdjU2';
 const INSTAGRAM_URL1 = 'https://www.instagram.com/asilmedi_uz?igsh=M2ZkazVvZXZzajVn&utm_source=qr';
-
 // Kino bazasi
 const moviesDatabase = {
     "1": {
@@ -55,20 +54,9 @@ const moviesDatabase = {
         fileId: "BAACAgQAAxkBAAMrai8vy9rgS-bUnovuJBgW0DBlTDIAAnMSAAJeQCBTVfHE6jA6R0Y8BA",
         views: 0,
         ratings: []
-    } // <-- Mana shu yerda ortiqcha vergul olib tashlandi!
+    }
+
 };
-
-// Railway o'chib qolmasligi uchun kichik HTTP server
-const http = require('http');
-const PORT = process.env.PORT || 3000;
-const server = http.createServer((req, res) => {
-    res.writeHead(200, { 'Content-Type': 'text/plain' });
-    res.end('Bot is running...');
-});
-server.listen(PORT);
-
-// Botni ishga tushirish qismi (Siz tashlagan qolgan kodlar shu yerga yoziladi)
-// ... (Kodingizning qolgan qismi: bot.on, bot.action va h.k.)
 
 const userStates = {};
 
@@ -132,3 +120,89 @@ bot.hears('🔍 Kod bilan izlash', (ctx) => {
     userStates[ctx.from.id] = 'CODE';
     ctx.reply('Kino kodini kiriting:');
 });
+
+bot.hears('📝 Nomi bilan izlash', (ctx) => {
+    userStates[ctx.from.id] = 'NAME';
+    ctx.reply('Kino nomini kiriting:');
+});
+
+bot.hears('🎲 Random kino', async (ctx) => {
+    const list = Object.values(moviesDatabase);
+    const movie = list[Math.floor(Math.random() * list.length)];
+
+    movie.views++;
+    return sendMovie(ctx, movie);
+});
+
+// ================= TEXT HANDLER =================
+bot.on('text', async (ctx) => {
+    const text = ctx.message.text.trim();
+    const state = userStates[ctx.from.id];
+
+    if (state === 'CODE') {
+        const movie = moviesDatabase[text];
+
+        if (!movie) return ctx.reply('❌ Kino topilmadi');
+
+        movie.views++;
+        delete userStates[ctx.from.id];
+
+        return sendMovie(ctx, movie);
+    }
+
+    if (state === 'NAME') {
+        const movie = Object.values(moviesDatabase).find(m =>
+            m.title.toLowerCase().includes(text.toLowerCase())
+        );
+
+        if (!movie) return ctx.reply('❌ Kino topilmadi');
+
+        movie.views++;
+        delete userStates[ctx.from.id];
+
+        return sendMovie(ctx, movie);
+    }
+
+    ctx.reply('📌 Tugmalardan foydalaning', mainMenu);
+});
+
+// ================= SEND MOVIE (PROTECTED) =================
+async function sendMovie(ctx, movie) {
+    const avg =
+        movie.ratings.length > 0
+            ? (movie.ratings.reduce((a, b) => a + b, 0) / movie.ratings.length).toFixed(1)
+            : '0';
+
+    // 🔥 VIDEO (PROTECTED)
+    await ctx.replyWithVideo(movie.fileId, {
+        caption:
+            `🎬 ${movie.title}
+👁 Ko‘rishlar: ${movie.views}
+
+
+⚠️ AsilMedia`
+        ,
+        protect_content: true   // 🔥 SHU MUHIM QISM
+    });
+
+}
+
+// ================= RATING =================
+bot.action(/rate_(\d+)/, async (ctx) => {
+    const rate = Number(ctx.match[1]);
+
+    const movies = Object.values(moviesDatabase);
+    const movie = movies[movies.length - 1]; // oxirgi film
+
+    movie.ratings.push(rate);
+
+
+});
+
+// ================= LAUNCH =================
+bot.launch().then(() => {
+    console.log('🚀 Bot ishga tushdi');
+});
+
+process.once('SIGINT', () => bot.stop('SIGINT'));
+process.once('SIGTERM', () => bot.stop('SIGTERM'));
