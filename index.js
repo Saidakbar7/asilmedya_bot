@@ -54,6 +54,24 @@ const moviesDatabase = {
         fileId: "BAACAgQAAxkBAAMrai8vy9rgS-bUnovuJBgW0DBlTDIAAnMSAAJeQCBTVfHE6jA6R0Y8BA",
         views: 0,
         ratings: []
+    },
+    "8": {
+        title: "Mortol Kombat",
+        fileId: "BAACAgEAAxkBAAMvai-853aSFHSmU6e6aeXbnzhrpZ4AAkIKAAKT6XlFCVKDGGV93PA8BA",
+        views: 0,
+        ratings: []
+    },
+    "9": {
+        title: "100 yil oldinda",
+        fileId: "BAACAgIAAxkBAAMxai-9Gu8q5QABuL7qEm_fw4HzzVREAALNZQAC2N8ISlXAVsNIRIlgPAQ",
+        views: 0,
+        ratings: []
+    },
+    "10": {
+        title: "X-Odamlar Birinchi Sinf ",
+        fileId: "BAACAgIAAxkBAAMyai-9g6WRz484yghlMAxM4bHlv9YAAluPAALwnsFKDXzyZpCMBMk8BA",
+        views: 0,
+        ratings: []
     }
 
 };
